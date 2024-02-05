@@ -80,3 +80,5 @@ interface Window {
         languages: any;
     };
 }
+
+type BrowserWindow = any;
