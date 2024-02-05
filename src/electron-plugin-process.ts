@@ -47,7 +47,7 @@ export class ElectronPluginProcess implements PluginProcess {
         const remote = require('@electron/remote');
         this.win = new remote.BrowserWindow({
             skipTaskbar: true,
-            show: true,
+            show: false,
             title: this.name,
             webPreferences: {
                 devTools: true,

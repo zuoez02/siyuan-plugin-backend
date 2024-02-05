@@ -1,33 +1,44 @@
-import { Menu, Plugin } from 'siyuan';
+import { Menu, Plugin, openTab } from 'siyuan';
 import { ProcessController } from './types/plugin';
 import { ElectronProcessController } from './electron-process-controller';
 import { ElectronCommunicationHandler } from './electron-communication-handler';
+import Tab from './views/tab.svelte';
+
+const TAB_TYPE = "PROCCESSES";
 
 export default class BackendPlugin extends Plugin {
     processController: ProcessController;
 
     onload(): void {
-        const icon = this.addTopBar({
+        this.addTopBar({
             icon: 'iconBug',
             title: this.name,
             callback: () => {
+                
                 if (!this.processController) {
                     return;
                 }
-                const menu = new Menu();
-                this.processController.getProcesses().forEach((k) => {
-                    menu.addItem({
-                        label: k,
-                        click: () => {
-                            this.reload(k);
-                        }
-                    })
-                });
-                const rect = icon.getBoundingClientRect();
-                menu.open({
-                    x: rect.right,
-                    y: rect.bottom,
-                    isLeft: true,
+                const tab = openTab({
+                    app: this.app,
+                    custom: {
+                        title: 'Backend',
+                        icon: 'iconBug',
+                        id: this.name + TAB_TYPE,
+                    }
+                })
+            }
+        });
+
+        const plugin = this;
+
+        this.addTab({
+            type: TAB_TYPE,
+            init() {
+                new Tab({
+                    target: this.element,
+                    props: {
+                        plugin,
+                    }
                 })
             }
         })
