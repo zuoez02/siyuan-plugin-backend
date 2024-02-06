@@ -18,6 +18,8 @@ export class ElectronCommunicationHandler {
             throw Error(`Plugin: ${name} doesn't have running process.`);
         }
         (await port).onmessage = (event) => callback(event);
-        return () => port.onmessage = undefined;
+        return () => {
+            this.processController.disconnect(name);
+        };
     }
 }

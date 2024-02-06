@@ -3,7 +3,7 @@ import { ElectronPluginProcess } from './electron-plugin-process';
 
 export class ElectronProcessController implements ProcessController {
     processes: Map<string, ElectronPluginProcess>;
-    currentWindow: BrowserWindow;
+    currentWindow: any;
     ports: Map<string, any>
     cacheCallbacks: Map<string, any> = new Map();
 
@@ -55,7 +55,7 @@ export class ElectronProcessController implements ProcessController {
     restore() {
         const remote = require('@electron/remote');
         this.currentWindow = remote.getCurrentWindow();
-        const children: BrowserWindow[] = this.currentWindow.getChildWindows();
+        const children: any[] = this.currentWindow.getChildWindows();
         children.forEach((b) => {
             const title = b.title;
             this.processes.set(title, new ElectronPluginProcess(b, () => this.unload(title)));
@@ -63,7 +63,7 @@ export class ElectronProcessController implements ProcessController {
     }
 
     unloadAll() {
-        this.processes.forEach((process, name) => {
+        this.getProcesses().forEach((name) => {
             this.unload(name);
         })
     }
@@ -74,40 +74,34 @@ export class ElectronProcessController implements ProcessController {
         });
     }
 
-    connect(name) {
+    connect(name: string) {
         const { MessageChannelMain } = require('@electron/remote');
         const { port1, port2 } = new MessageChannelMain();
         let re;
         const promise = new Promise((resolve) => {
-           re = resolve;
+            re = resolve;
         })
         this.ports.set(name, promise);
         port1.name = name;
         const { ipcRenderer } = require('electron');
-        
-        ipcRenderer.once('connect:'+name, (event) => {
+        ipcRenderer.once('connect:' + name, (event) => {
             const p = event.ports[0];
             this.ports.set(name, p);
+            const processWindow = this.processes.get(name).getWindow();
+            processWindow.webContents.postMessage("connect", null, [port2]);
             if (this.cacheCallbacks.get(name)) {
-                console.log('reconnect to plugin host: ' + name)
                 p.onmessage = this.cacheCallbacks.get(name);
                 this.cacheCallbacks.delete(name);
             }
-          })
-        
-        require('@electron/remote').getCurrentWindow().webContents.postMessage("connect:"+name, null, [port1]);
-        const processWindow = this.processes.get(name).getWindow();
-        if (processWindow.isEnabled()) {
-            processWindow.webContents.postMessage("connect", null, [port2]);
-            return;
-        }
-        processWindow.once('ready-to-show', () => {
-            processWindow.webContents.postMessage('connect', null, [port2])
-        })
+        });
+        require('@electron/remote').getCurrentWindow().webContents.postMessage("connect:" + name, null, [port1]);
     }
 
-    disconnect(name) {
+    disconnect(name: string) {
         const port = this.ports.get(name);
+        if (port) {
+            port.postMessage('disconnect');
+        }
         this.ports.delete(name);
         const onmessage = port.onmessage;
         this.cacheCallbacks.set(name, onmessage);

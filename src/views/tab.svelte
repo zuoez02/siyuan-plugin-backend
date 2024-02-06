@@ -7,6 +7,8 @@
   onMount(() => {
     processes = plugin.processController.getProcesses();
   })
+  
+  const sendMessage = () => plugin.sendMessage();
 
   export let plugin: BackendPlugin;
 </script>
@@ -18,7 +20,7 @@
     <div class="processes">
         {#each processes as process}  
         <div class="process">
-            <span class="process-name">{process}</span>
+            <span class="process-name" on:click={() => sendMessage()}>{process}</span>
             <svg><use xlink:href="#iconPlay"></use></svg>
         </div>
         {/each}

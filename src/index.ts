@@ -71,9 +71,15 @@ export default class BackendPlugin extends Plugin {
         const callback = await handler.listenToProcess(this.name, (event) => {
             const data = event.data;
             console.log(data);
-            handler.sendToProcess(this.name, 'fuck you, too');
-            callback();
+            if (data === 'fuck you, too') {
+                callback();
+            }
         });
+    }
+
+    sendMessage() {
+        const handler = new ElectronCommunicationHandler(this.processController as ElectronProcessController);
+        handler.sendToProcess(this.name, 'fuck you');
     }
 
     async reload(name: string) {

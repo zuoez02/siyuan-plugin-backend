@@ -1,7 +1,7 @@
 import { PluginProcess } from "./types/plugin";
 
 export class ElectronPluginProcess implements PluginProcess {
-    private win: BrowserWindow;
+    private win: any;
 
     private id: number;
 
@@ -9,7 +9,7 @@ export class ElectronPluginProcess implements PluginProcess {
 
     private name: string;
 
-    constructor(param: string | BrowserWindow, private onRemove: () => void) {
+    constructor(param: string | any, private onRemove: () => void) {
       if (typeof param === 'string') {
         this.name = param;
         this.running = false;
@@ -37,7 +37,53 @@ export class ElectronPluginProcess implements PluginProcess {
         </head>
         <body>
           <script>
-          ${script}
+          class Bridge {
+            port
+            onconnect;
+            onmessage;
+            ondisconnect;
+            on(event, callback) {
+              switch (event) {
+                case 'connect': this.onconnect = callback; break;
+                case 'message': this.onmessage = callback; break;
+                case 'disconnect': this.ondisconnect = callback; break;
+                default: throw Error("no such event listener: " + event);
+              }
+            }
+            setPort(port) {
+              this.port = port;
+            }
+            send(data) {
+              if (!this.port) {
+                throw Error("no port exist");
+              }
+              this.port.postMessage(data);
+            }
+
+          }
+          const bridge = new Bridge();
+          (function(b) {
+            const { ipcRenderer } = require('electron');
+            let port;
+            ipcRenderer.on('connect', async (event, args) => {
+              port = event.ports[0];
+              bridge.setPort(port);
+              bridge.onconnect && bridge.onconnect();
+
+              port.onmessage = (e) => {
+                bridge.onmessage && bridge.onmessage(e.data);
+              }
+            });
+            ipcRenderer.on('disconnect', async (event, args) => {
+              port = undefined;
+              bridge.ondisconnect && bridge.ondisconnect();
+            });
+          })(bridge);
+
+          (function(bridge) {
+            ${script}
+          })(bridge);
+          
           </script>
         </body>
       </html>
@@ -47,7 +93,7 @@ export class ElectronPluginProcess implements PluginProcess {
         const remote = require('@electron/remote');
         this.win = new remote.BrowserWindow({
             skipTaskbar: true,
-            show: false,
+            show: true,
             title: this.name,
             webPreferences: {
                 devTools: true,
@@ -56,7 +102,6 @@ export class ElectronPluginProcess implements PluginProcess {
                 contextIsolation: false,
             }
         });
-        console.log('electron-plugin-process: create window: ' + this.win.id);
         this.win.loadURL(url);
         this.running = true;
         this.id = this.win.id;
@@ -83,7 +128,7 @@ export class ElectronPluginProcess implements PluginProcess {
       this.id = id;
     }
 
-    setParentWindow(win: BrowserWindow) {
+    setParentWindow(win: any) {
         this.win.setParentWindow(win);
     }
 

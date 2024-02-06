@@ -1,31 +1,20 @@
-const { ipcRenderer } = require('electron');
-
-let port: any;
-
-const sleep = async () => new Promise((resolve) => {
-  setTimeout(resolve, 1000);
-})
-
-ipcRenderer.on('connect', async (event, args) => {
-  port = event.ports[0];
-  console.log('connect', port);
-  port.onmessage = (e) => {
-    console.log(e.data); 
-    port.postMessage("fuck you, three");
+bridge.on('connect', () => {
+  console.log('connected');
+  bridge.send('hello, I am connected');
+});
+bridge.on('message', (data) => {
+  console.log('message', data);
+  if (data === 'fuck you') {
+    bridge.send('fuck you, too');
   }
-  setTimeout(() => {
-    port.postMessage("fuck you");
-  }, 1000);
-})
-
-ipcRenderer.on('disconnect', (event, args) => {
-  port.onmessage = undefined;
-  port = undefined;
-})
+});
+bridge.on('disconnect', () => {
+  console.log('disconnect')
+});
 
 const http = require('http')
 
-const p = 3001
+const port = 3001
 
 const server = http.createServer((req, res) => {
   res.statusCode = 200
@@ -34,5 +23,5 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(port, () => {
-  console.log(`服务器运行在 http://:${p}/`)
+  console.log(`服务器运行在 http://:${port}/`)
 })

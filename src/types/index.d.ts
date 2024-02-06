@@ -82,3 +82,17 @@ interface Window {
 }
 
 type BrowserWindow = any;
+
+class Bridge {
+    onmessage: any;
+    onconnect: any;
+    ondisctonnect: any;
+    on(event: string, callback: (...args: any) => void);
+    send(data: any);
+}
+
+declare global {
+    var bridge: Bridge;
+}
+
+export {};
