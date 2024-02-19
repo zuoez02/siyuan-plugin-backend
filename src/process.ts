@@ -1,7 +1,10 @@
+const { bridge } = require('siyuan-backend-plugin');
+
 bridge.on('connect', () => {
   console.log('connected');
   bridge.send('hello, I am connected');
 });
+
 bridge.on('message', (data) => {
   console.log('message', data);
   if (data === 'fuck you') {

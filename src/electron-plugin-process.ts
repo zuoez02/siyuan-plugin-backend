@@ -62,7 +62,17 @@ export class ElectronPluginProcess implements PluginProcess {
 
           }
           const bridge = new Bridge();
+          const packages = {
+            bridge,
+          };
+          const _require = require;
           (function(b) {
+            let require = (name) => {
+              switch(name) {
+                case 'siyuan-backend-plugin': return package;
+                default: return _require(name);
+              }
+            }
             const { ipcRenderer } = require('electron');
             let port;
             ipcRenderer.on('connect', async (event, args) => {
@@ -93,10 +103,10 @@ export class ElectronPluginProcess implements PluginProcess {
         const remote = require('@electron/remote');
         this.win = new remote.BrowserWindow({
             skipTaskbar: true,
-            show: true,
+            show: false,
             title: this.name,
             webPreferences: {
-                devTools: true,
+                devTools: false,
                 nodeIntegration: true,
                 webSecurity: true,
                 contextIsolation: false,

@@ -91,8 +91,10 @@ class Bridge {
     send(data: any);
 }
 
-declare global {
-    var bridge: Bridge;
+declare module 'siyuan-backend-plugin' {
+    export default {
+        bridge: Bridge
+    }
 }
 
 export {};
