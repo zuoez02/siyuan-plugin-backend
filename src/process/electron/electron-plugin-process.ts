@@ -1,4 +1,4 @@
-import { PluginProcess } from "./types/plugin";
+import { PluginProcess } from "../../types/plugin";
 
 export class ElectronPluginProcess implements PluginProcess {
     private win: any;
@@ -57,42 +57,58 @@ export class ElectronPluginProcess implements PluginProcess {
               if (!this.port) {
                 throw Error("no port exist");
               }
-              this.port.postMessage(data);
+              this.port.postMessage("00" + data);
+            }
+            sendLog(data) {
+              if (!this.port) {
+                throw Error("no port exist");
+              }
+              this.port.postMessage("01" + data);
             }
 
           }
           const bridge = new Bridge();
+          const logger = {
+            info(...args) {
+              bridge.sendLog(Array.isArray(args) ? args.join(',') : String(args));
+            }
+          }
           const packages = {
             bridge,
+            logger,
+          };
+          const obj = {
+            require: null,
           };
           const _require = require;
           (function(b) {
             let require = (name) => {
               switch(name) {
-                case 'siyuan-backend-plugin': return package;
+                case 'siyuan-backend-plugin': return packages;
                 default: return _require(name);
               }
             }
+            obj.require = require;
             const { ipcRenderer } = require('electron');
             let port;
             ipcRenderer.on('connect', async (event, args) => {
               port = event.ports[0];
-              bridge.setPort(port);
-              bridge.onconnect && bridge.onconnect();
+              b.setPort(port);
+              b.onconnect && b.onconnect();
 
               port.onmessage = (e) => {
-                bridge.onmessage && bridge.onmessage(e.data);
+                b.onmessage && b.onmessage(e.data);
               }
             });
             ipcRenderer.on('disconnect', async (event, args) => {
               port = undefined;
-              bridge.ondisconnect && bridge.ondisconnect();
+              b.ondisconnect && b.ondisconnect();
             });
           })(bridge);
 
-          (function(bridge) {
+          (function(require) {
             ${script}
-          })(bridge);
+          })(obj.require);
           
           </script>
         </body>
@@ -106,7 +122,7 @@ export class ElectronPluginProcess implements PluginProcess {
             show: false,
             title: this.name,
             webPreferences: {
-                devTools: false,
+                devTools: true,
                 nodeIntegration: true,
                 webSecurity: true,
                 contextIsolation: false,
@@ -144,5 +160,9 @@ export class ElectronPluginProcess implements PluginProcess {
 
     getWindow() {
       return this.win;
+    }
+
+    getRunning() {
+      return this.running;
     }
 }

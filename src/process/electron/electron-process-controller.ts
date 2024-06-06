@@ -1,17 +1,21 @@
-import { PluginProcess, ProcessController } from "./types/plugin";
+import { debug } from "@/utils/console";
+import { PluginProcess, ProcessController } from "../../types/plugin";
 import { ElectronPluginProcess } from './electron-plugin-process';
+import { ProcessManager } from "../manager";
 
 export class ElectronProcessController implements ProcessController {
     processes: Map<string, ElectronPluginProcess>;
     currentWindow: any;
     ports: Map<string, any>
     cacheCallbacks: Map<string, any> = new Map();
+    manager: ProcessManager;
 
-    constructor() {
-        this.processes = new Map();
+    constructor(manager: ProcessManager) {
+        this.processes = new Map(); 2
         this.ports = new Map();
         this.restore();
         this.initCommunication();
+        this.manager = manager;
     }
 
     has(name: string) {
@@ -36,6 +40,7 @@ export class ElectronProcessController implements ProcessController {
         process.setParentWindow(this.currentWindow);
         this.processes.set(pluginName, process);
         this.connect(pluginName);
+        debug(process);
     }
 
     reload(plugin: string, script: string) {
@@ -50,12 +55,14 @@ export class ElectronProcessController implements ProcessController {
             this.processes.delete(plugin);
             this.disconnect(plugin);
         }
+        this.manager.setRunning(plugin, false);
     }
 
     restore() {
         const remote = require('@electron/remote');
         this.currentWindow = remote.getCurrentWindow();
         const children: any[] = this.currentWindow.getChildWindows();
+        debug("electron process controller restored:", children);
         children.forEach((b) => {
             const title = b.title;
             this.processes.set(title, new ElectronPluginProcess(b, () => this.unload(title)));

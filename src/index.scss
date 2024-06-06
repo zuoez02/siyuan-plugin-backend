@@ -1,0 +1,39 @@
+.process-tab {
+    padding: 20px;
+}
+
+.process-tab-section {
+    margin-top: 20px;
+    padding-bottom: 4px;
+
+    h3 {
+        border-bottom: 1px solid var(--b3-theme-on-background);
+    }
+
+    .processes {
+        margin-top: 12px;
+    }
+    .process-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-right: 12px;
+    }
+    .process-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+
+        &:hover {
+            color: var(--b3-theme-primary);
+        }
+    }
+
+    .process-running {
+        color: var(--b3-theme-success);
+    }
+
+    .process-stopped {
+        color: var(--b3-theme-error);
+    }
+}

@@ -15,3 +15,24 @@ export interface PluginProcess {
     getId();
     setId(id: number);
 }
+
+export interface PluginLogger {
+    info(val: string): void;
+    warn(val: string): void;
+    error(val: string): void;
+    debug(val: string): void;
+    start(): void;
+    stop(): void;
+}
+
+export interface Process {
+    name: string;
+    running: boolean;
+}
+
+export interface BackendProcessPlugin {
+    name: string;
+    running: boolean;
+    enabled: boolean;
+    logger?: PluginLogger;
+}
