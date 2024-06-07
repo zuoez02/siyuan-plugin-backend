@@ -18,6 +18,7 @@ export class ElectronCommunicationHandler implements PluginHandler {
         if (!port) {
             throw Error(`Plugin: ${name} doesn't have running process.`);
         }
+        
         (await port).onmessage = (event) => callback(event);
         return () => {
             this.processController.disconnect(name);

@@ -31,19 +31,18 @@ export class ProcessManager {
 
     toggleLogger(name: string) {
         if (this.currentLogger) {
+            console.log("[BackendPlugin Logger] Exist Logger closed");
             this.currentLogger.stop();
+            this.currentLogger = null;
         }
         const logger = this.backendPlugins.find(p => p.name === name).logger;
-        if (logger === this.currentLogger) {
-            logger.stop();
-            this.currentLogger = null;
-            return;
-        }
+        debug("logger", logger);
         if (!logger) {
+            debug("empty logger");
             this.currentLogger = null;
             return;
         }
-        debug('[BackendPlugin logger] Switch to logger for:' + name);
+        console.log('[BackendPlugin logger] Switch to logger for:' + name);
         this.currentLogger = logger;
         logger.start();
     }
@@ -114,6 +113,7 @@ export class ProcessManager {
         }
         // initLogger
         for (const plugin of this.backendPlugins) {
+            plugin.logger = new ElectronProcessLogger();
             const handler = new ElectronCommunicationHandler(this.processController as ElectronProcessController);
             const pluginHandler = {
                 callback: null,
@@ -125,7 +125,7 @@ export class ProcessManager {
                 }
             }
             plugin.handler = pluginHandler;
-            finish(_this.plugin.HANDLER_PREFIX +plugin.name, handler);
+            finish(_this.plugin.HANDLER_PREFIX +plugin.name, pluginHandler);
             handler.listenToProcess(plugin.name, (event) => {
                 const data = event.data;
                 const type = data.slice(0, 2);

@@ -84,7 +84,7 @@ export default class DemoPlugin extends Plugin {
       this.eventBus.on('backend-plugin-log', (data) => data); // 日志接收
     }
 }
-```
+``` 
 
 ## 路线图
 

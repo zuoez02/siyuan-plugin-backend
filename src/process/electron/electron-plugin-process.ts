@@ -59,6 +59,12 @@ export class ElectronPluginProcess implements PluginProcess {
               }
               this.port.postMessage("00" + data);
             }
+            sendData(data) {
+              if (!this.port) {
+                throw Error("no port exist");
+              }
+              this.port.postMessage(data);
+            }
             sendLog(data) {
               if (!this.port) {
                 throw Error("no port exist");

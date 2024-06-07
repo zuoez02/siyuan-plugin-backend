@@ -1,3 +1,4 @@
 export const debug = (...args) => {
-    false && console.debug(...args);
+    return;
+    console.log(...args);
 }

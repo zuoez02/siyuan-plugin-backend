@@ -84,7 +84,7 @@ export class ElectronProcessController implements ProcessController {
     connect(name: string) {
         const { MessageChannelMain } = require('@electron/remote');
         const { port1, port2 } = new MessageChannelMain();
-        let re;
+        let re: (value: unknown) => void;
         const promise = new Promise((resolve) => {
             re = resolve;
         })
@@ -100,6 +100,7 @@ export class ElectronProcessController implements ProcessController {
                 p.onmessage = this.cacheCallbacks.get(name);
                 this.cacheCallbacks.delete(name);
             }
+            re(p);
         });
         require('@electron/remote').getCurrentWindow().webContents.postMessage("connect:" + name, null, [port1]);
     }

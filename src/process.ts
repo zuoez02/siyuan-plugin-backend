@@ -1,4 +1,4 @@
-const { bridge } = require('siyuan-backend-plugin');
+const { bridge, logger } = require('siyuan-backend-plugin');
 
 bridge.on('connect', () => {
   console.log('connected');
@@ -7,24 +7,22 @@ bridge.on('connect', () => {
 
 bridge.on('message', (data) => {
   console.log('message', data);
-  if (data === 'fuck you') {
-    bridge.send('fuck you, too');
+  if (data === 'nice to meet you') {
+    bridge.send('nice to meet you, too');
   }
 });
 bridge.on('disconnect', () => {
   console.log('disconnect')
 });
 
-const http = require('http')
+const sleep = (t) => new Promise((resolve) => setTimeout(() => resolve(t), t));
 
-const port = 3001
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'text/plain;charset=utf-8')
-  res.end('你好世界1123\n' + process.pid + " " + process.ppid)
-})
-
-server.listen(port, () => {
-  console.log(`服务器运行在 http://:${port}/`)
-})
+(async function() {
+  while(true) {
+    await sleep(1000);
+    try {
+      logger.info("hello world"); 
+    } finally {
+    }
+  }
+})()
