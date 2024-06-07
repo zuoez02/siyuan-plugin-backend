@@ -1,9 +1,12 @@
 import { BackendProcessPlugin, PluginLogger, ProcessController } from "@/types/plugin";
 import { ElectronProcessController } from "./electron/electron-process-controller";
-import { Plugin } from "siyuan";
 import { ElectronCommunicationHandler } from "./electron/electron-communication-handler";
 import { debug } from "@/utils/console";
 import { ElectronProcessLogger } from "./electron/electron-process-logger";
+import exp from 'wait-finish';
+import BackendPlugin from "..";
+
+const { finish } = exp;
 
 export class ProcessManager {
     processController: ProcessController;
@@ -12,7 +15,7 @@ export class ProcessManager {
 
     currentLogger: PluginLogger = null;
 
-    constructor(private plugin: Plugin) {
+    constructor(private plugin: BackendPlugin) {
 
     }
 
@@ -112,6 +115,17 @@ export class ProcessManager {
         // initLogger
         for (const plugin of this.backendPlugins) {
             const handler = new ElectronCommunicationHandler(this.processController as ElectronProcessController);
+            const pluginHandler = {
+                callback: null,
+                send(...args) {
+                    handler.sendToProcess(plugin.name, ...args);
+                },
+                listen(callback) {
+                    this.callback = callback;
+                }
+            }
+            plugin.handler = pluginHandler;
+            finish(_this.plugin.HANDLER_PREFIX +plugin.name, handler);
             handler.listenToProcess(plugin.name, (event) => {
                 const data = event.data;
                 const type = data.slice(0, 2);
@@ -123,6 +137,7 @@ export class ProcessManager {
                 if (type === '00') {
                     // data
                     (p.eventBus as any).emit('backend-plugin', data.slice(2));
+                    pluginHandler.callback && pluginHandler.callback(data.slice(2));
                 } else if (type == '01' || type === '02' || type === '03' || type === '04') {
                     // info, warn, error, debug
                     if (!plugin.logger) {

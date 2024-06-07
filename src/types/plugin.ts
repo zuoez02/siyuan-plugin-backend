@@ -25,6 +25,11 @@ export interface PluginLogger {
     stop(): void;
 }
 
+export interface PluginHandler {
+    sendToProcess(name: string, ...args: any): Promise<void>;
+    listenToProcess(name: string, callback: (...args) => void): Promise<() => void>;
+}
+
 export interface Process {
     name: string;
     running: boolean;
@@ -34,5 +39,9 @@ export interface BackendProcessPlugin {
     name: string;
     running: boolean;
     enabled: boolean;
+    handler?: {
+        send(...args: any): any;
+        listen(cb: (...args: any) => void): void;
+    };
     logger?: PluginLogger;
 }

@@ -8,6 +8,8 @@ const TAB_TYPE = "PROCCESSES";
 export default class BackendPlugin extends Plugin {
     processManager: ProcessManager;
 
+    HANDLER_PREFIX = 'backend-handler_';
+
     onload(): void {
         this.processManager = new ProcessManager(this);
 

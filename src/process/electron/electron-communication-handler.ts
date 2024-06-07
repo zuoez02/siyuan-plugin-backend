@@ -1,6 +1,7 @@
+import { PluginHandler } from "@/types/plugin";
 import { ElectronProcessController } from "./electron-process-controller";
 
-export class ElectronCommunicationHandler {
+export class ElectronCommunicationHandler implements PluginHandler {
     constructor(private processController: ElectronProcessController) {
     }
 
