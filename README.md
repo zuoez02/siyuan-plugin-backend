@@ -1,4 +1,3 @@
-```markdown
 # Plugin System Backend Module
 
 > Currently in the testing phase, welcome other developers to use and provide feedback
@@ -92,4 +91,3 @@ export default class DemoPlugin extends Plugin {
 + [ ] Strengthen desktop version process control
 + [ ] Add a log query tool
 + [ ] Docker implementation plan
-```
